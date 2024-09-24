@@ -1,4 +1,4 @@
-use crate::util::{read_input_file_as_string, read_input_file_lines, Solution};
+use crate::util::{read_input_file_lines, Solution};
 
 pub struct Day2 {
     day: u32,

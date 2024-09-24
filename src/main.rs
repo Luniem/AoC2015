@@ -1,4 +1,4 @@
-use days::day2::Day2;
+use days::day3::Day3;
 use util::Solution;
 
 mod days;
@@ -6,7 +6,7 @@ mod util;
 
 fn main() {
     // create struct for day
-    let curr_day = Day2::default();
+    let curr_day = Day3::default();
 
     // solve first
     println!("Solution for first part: {}", curr_day.solve_first_part());

@@ -13,8 +13,6 @@ pub fn read_input_file_as_string(day: u32) -> String {
     let input_path = src_path.join(INPUT_DIR);
     let file_path = input_path.join(format!("day{}.txt", day));
 
-    print!("{}", file_path.display());
-
     let input_file = read_to_string(file_path);
     if input_file.is_ok() {
         return input_file.unwrap();

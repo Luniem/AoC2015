@@ -28,47 +28,127 @@ impl Solution for Day7 {
 
 enum ShiftDir {
     Left,
-    Right
+    Right,
 }
 
 enum LogicOp {
     And,
-    Or
+    Or,
 }
 
 struct DirectProvidedWire {
-    provided_val: u16
+    provided_val: u16,
+    id: String,
 }
 
 struct ShiftedWire {
     dir: ShiftDir,
     shift_value: u16,
-    shifted_wire: String
+    shifted_wire: String,
+    id: String,
 }
 
 struct LogicWire {
     op: LogicOp,
     left_wire: String,
-    right_wire: String
+    right_wire: String,
+    id: String,
 }
 
 struct ComplementWire {
-    depend_wire: String
+    depend_wire: String,
+    id: String,
 }
 
 impl WireResolver for DirectProvidedWire {
-    fn resolveWire<T: WireResolver>(&self, wires: Vec<T>) -> u16 {
-        todo!()
+    fn resolve_wire<T: WireResolver>(&self, wires: &Vec<&T>) -> u16 {
+        return self.provided_val;
+    }
+
+    fn get_id(&self) -> String {
+        self.id.clone()
+    }
+}
+
+impl WireResolver for LogicWire {
+    fn resolve_wire<T: WireResolver>(&self, wires: &Vec<&T>) -> u16 {
+        let mut left_wire: Option<&T> = None;
+        let mut right_wire: Option<&T> = None;
+
+        for wire in wires {
+            if wire.get_id() == self.left_wire {
+                left_wire = Some(wire);
+            } else if wire.get_id() == self.right_wire {
+                right_wire = Some(wire);
+            }
+        }
+
+        if left_wire.is_none() || right_wire.is_none() {
+            panic!("Expected to found wire!");
+        }
+
+        let left_wire = left_wire.unwrap();
+        let right_wire = right_wire.unwrap();
+
+        return match self.op {
+            LogicOp::And => left_wire.resolve_wire(wires) & right_wire.resolve_wire(wires),
+            LogicOp::Or => left_wire.resolve_wire(wires) | right_wire.resolve_wire(wires),
+        };
+    }
+
+    fn get_id(&self) -> String {
+        self.id.clone()
     }
 }
 
 impl WireResolver for ShiftedWire {
-    fn resolveWire<T: WireResolver>(&self, wires: Vec<T>) -> u16 {
-        
+    fn resolve_wire<T: WireResolver>(&self, wires: &Vec<&T>) -> u16 {
+        let mut shifted_wire: Option<&T> = None;
+
+        for wire in wires.iter() {
+            if wire.get_id() == self.shifted_wire {
+                shifted_wire = Some(wire);
+            }
+        }
+
+        if shifted_wire.is_none() {
+            panic!("Expected to found wire");
+        }
+
+        return match self.dir {
+            ShiftDir::Left => shifted_wire.unwrap().resolve_wire(wires) << self.shift_value,
+            ShiftDir::Right => shifted_wire.unwrap().resolve_wire(wires) >> self.shift_value,
+        };
+    }
+
+    fn get_id(&self) -> String {
+        self.id.clone()
     }
 }
 
+impl WireResolver for ComplementWire {
+    fn resolve_wire<T: WireResolver>(&self, wires: &Vec<&T>) -> u16 {
+        let mut depend_wire: Option<&T> = None;
+
+        for wire in wires.iter() {
+            if wire.get_id() == self.depend_wire {
+                depend_wire = Some(wire);
+            }
+        }
+
+        if depend_wire.is_none() {
+            panic!("Expected to found wire");
+        }
+
+        return !depend_wire.unwrap().resolve_wire(wires);
+    }
+
+    fn get_id(&self) -> String {
+        self.id.clone()
+    }
+}
 
 trait WireResolver {
-    fn resolveWire<T: WireResolver>(&self, wires: Vec<T>) -> u16;
+    fn resolve_wire<T: WireResolver>(&self, wires: &Vec<&T>) -> u16;
+    fn get_id(&self) -> String;
 }
